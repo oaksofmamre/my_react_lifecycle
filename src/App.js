@@ -2,50 +2,43 @@ import React, { Component } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
-// Functional Component
-const FlashMessageFunction = ({ type, children }) => (
+// Reusable flash message component
+const FlashMessage = ({ type, children }) => (
 	<div className={`alert alert-${type}`} role="alert">
 		{children}
 	</div>
 );
 
-// Class-based Component
-// Declare a class inheriting from Component or React.Component
-class FlashMessageClass extends React.Component {
-	// Add a render function to the class
-	render() {
-		// Declare constants for your props
-		const { type, children } = this.props;
-
-		// Return the JSX output for the component
-		return (
-			<div className={`alert alert-${type}`} role="alert">
-				{children}
-			</div>
-		);
-	}
-}
-
-//////////////////////////////////////////////////////////////////
-
-// Dynamic stop and go component with initial state set
+// Stop and go component cycling on a timer
 class StopAndGo extends React.Component {
-	// Add a constructor method to initialize state
 	constructor() {
-		// Call super to initialize `this`
 		super();
-
-		// Initialize state
 		this.state = {
 			color: "success",
 			message: "GO!"
 		};
 
-		// Bind click functions to `this`
-		this.handleClick = this.handleClick.bind(this);
+		// Removed our binding statement
 	}
 
-	handleClick() {
+	// Initialize the timer after rendering complete
+	// DC: here is a lifecycle method to hook into
+	componentDidMount() {
+		this.timer = setInterval(
+			// Arrow function here effectively binds to correct `this`
+			() => this.switchLight(),
+			5000
+		);
+	}
+
+	// Clear our timer before removing component
+	// DC: here is another lifecycle method to hook into
+	componentWillUnmount() {
+		clearInterval(this.timer);
+	}
+
+	// Renamed our handle since no longer triggered on click
+	switchLight() {
 		console.log("clicking");
 		if (this.state.color === "success") {
 			this.setState({
@@ -61,14 +54,10 @@ class StopAndGo extends React.Component {
 	}
 
 	render() {
-		// Access state values with this.state
 		const { color, message } = this.state;
 
-		return (
-			<div onClick={this.handleClick}>
-				<FlashMessageFunction type={color}>{message}</FlashMessageFunction>
-			</div>
-		);
+		// Removed onClick and wrapper div
+		return <FlashMessage type={color}>{message}</FlashMessage>;
 	}
 }
 
@@ -76,13 +65,7 @@ class App extends React.Component {
 	render() {
 		return (
 			<div className="container">
-				<h1>Fun With State</h1>
-
-				<h3>Functional vs Class-Based Components</h3>
-				<FlashMessageFunction type="success">Success</FlashMessageFunction>
-				<FlashMessageClass type="danger">Danger</FlashMessageClass>
-
-				<h3>Setting State and User Events</h3>
+				<h1>Lifecycle Methods</h1>
 				<StopAndGo />
 			</div>
 		);
